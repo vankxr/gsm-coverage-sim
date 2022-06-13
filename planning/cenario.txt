@@ -1,0 +1,38 @@
+nhab = 17818 (2021) (concelho) pordata
+area = 211.31 km2 (concelho)
+nhab = 3279 (2021) (vila)
+area = 8.68 km2 (vila)
+tp = 177.6% (2021) anacom relatorio anual serviços moveis 2021
+tp_em2m = 125.7% (2021) anacom relatorio anual serviços moveis 2021
+cota_vdf = 29.3 % (2021) anacom factos e números
+dur_total = 35434100000 min (total 2021) anacom factos e números
+dur_media = 192 sec (2021 Q4) anacom relatorio anual serviços moveis 2021
+n_assinantes = 18400000 (2021 Q4) anacom relatorio anual serviços moveis 2021
+
+n_calls = dur_total * 60 / dur_media
+n_calls_hour = n_chamadas / (24 * 365)
+assumir 10x ~ 15x para a busy hour (12x looks good)
+n_calls_per_user_busy_hour = n_calls_hour * 12 / n_assinantes
+traffic_per_user_busy_hour= n_calls_per_user_busy_hour * dur_media / (60 * 60) [Erlang]
+study_area = 15 km * 15 km [km2]
+n_hab_study_area = nhab / area * study_area
+n_assinantes_study_area = n_hab_study_area * tp (ou tp_em2m) * cota_vdf
+total_traffic_busy_hour = traffic_per_user_busy_hour * n_assinantes_study_area
+
+GSM -> deb. total -> 8 canais/portadora
+GSM -> agregados de 4 celulas (omni ou 3 setores)
+usar 1 portadora por setor = 3 portadoras por celula, experimentar em omni e setorizado
+usar prob. bloqueio 1%
+
+n_carriers_per_cell = 3
+n_channels_per_cell = n_carriers_per_cell * 8 = 24
+traffic_per_cell = 15.25 [Erlang, from look up table]
+n_cells = ceil(total_traffic_busy_hour / traffic_per_cell)
+n_agregs = floor(n_cells / 4)
+n_standalone_cells = n_cells % 4
+
+final serão necessários [n_agregs] agregados e, eventualmente, [n_standalone_cells] células isoladas que não fazem parte de nenhum agregados
+ou então, [n_agregs + 1] agregados
+
+Q: Como saber quantas portadoras usar por célula?
+    Neste caso consideram-se 12 portadoras disponíveis (3 por célula, 4 células por agregado), mas se considerar 36 (9 por célula), por exemplo, consigo cobrir toda a área de estudo só com um agregado, eliminando por completo constrangimentos de interferência co-canal -> planeamento mais fácil.
